@@ -13,7 +13,7 @@ INTERACTIVE=0
 
 function show_help () {
   command_name=$(basename "${0}")
-  ${ECHO} "Usage: ${command_name} [-h] [-i]" 1>&2
+  ${ECHO} "Usage: ${command_name} [-h] [-i] source_dir destination_dir " 1>&2
   ${ECHO} "Options:" 1>&2
   ${ECHO} "    -h      -- print basic options" 1>&2
   ${ECHO} "    -i      -- interactive mode" 1>&2
