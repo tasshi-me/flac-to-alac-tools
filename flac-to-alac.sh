@@ -132,12 +132,13 @@ flac_files=()
 while IFS=  read -r -d $'\0'; do
   flac_files+=("$REPLY")
 done < <(find "${src_dir}" -name '*.flac' -print | sort -n | tr '\n' '\0' )
+flac_file_count="${#flac_files[@]}"
 
 # covert
-for ((i = 0; i < "${#flac_files[@]}"; i++))
+for ((i = 0; i < $flac_file_count; i++))
 do
   file="${flac_files[i]}"
-  echo "src: $file"
+  echo "[$(($i+1))/${flac_file_count}] $file"
   
   # build src file path
   src_file_dir=$(dirname "${file}")
