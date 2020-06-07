@@ -19,7 +19,16 @@ function show_help () {
   ${ECHO} "    -i      -- interactive mode" 1>&2
 }
 
-# info
+function convert_flac_to_alac(){
+  # convert to flac
+  ${FFMPEG} -y -loglevel panic -i "${src_file_path}.flac" -vn -acodec alac "${dst_file_path}.m4a"
+  # export thumbnail
+  ${FFMPEG} -y -loglevel panic -i "${src_file_path}.flac" "${dst_file_path}.jpg"
+  # import thumbnail
+  ${ATOMICPARSLEY} "${dst_file_path}.m4a" --artwork "${dst_file_path}.jpg" --overWrite > /dev/null
+}
+
+# show info
 ${ECHO} "FLAC to ALAC tool Copyright (c) 2020 tasshi"
 
 # parse args
@@ -118,43 +127,28 @@ fi
 mkdir -p "${dst_dir}"
 rsync --quiet -avz --include "*/" --exclude "*" "${src_dir}/" "${dst_dir}"
 
-# WIP
-#find "${src_dir}" -print|grep flac|sort
-# flac_files=($(find "${src_dir}" -type f -print| grep -i flac| sed -e "s/$/\"/g" -e "s/^/\"/g"| sort))
-# flac_files=($(find "${src_dir}" -name '*.flac' -print | sort))
-# flac_files=()
-# while IFS=  read -r -d $'\0'; do
-#   flac_files+=("$REPLY")
-# done < <(find "${src_dir}" -name '*.flac' -print0)
-#for FILE in "${flac_files[@]}"
-# for ((i = 0; i < "${#flac_files[@]}"; i++))
-# for FILE in ${src_dir}
-# flac_files=$(find "${src_dir}" -name '*.flac' -print | sort)
-# echo ${flac_files} | while read FILE
-#find "${src_dir}" -name '*.flac' -print | while read FILE
-# file=$FILE
-
-# covert
+# collect src list
 flac_files=()
 while IFS=  read -r -d $'\0'; do
   flac_files+=("$REPLY")
 done < <(find "${src_dir}" -name '*.flac' -print | sort -n | tr '\n' '\0' )
 
+# covert
 for ((i = 0; i < "${#flac_files[@]}"; i++))
 do
   file="${flac_files[i]}"
   echo "src: $file"
+  
+  # build src file path
   src_file_dir=$(dirname "${file}")
   src_file_basename=$(basename "${file}" .flac)
   src_file_path="${src_file_dir}/${src_file_basename}"
+  
+  # build dst file path
   pattern=$(echo "${src_dir}" |  sed -e 's/\//\\\//g')
   dst_file_relative=$(echo "${src_file_path}" | sed -e "s/${pattern}//g")
   dst_file_path="${dst_dir}${dst_file_relative}"
   
-  # convert to flac
-  ${FFMPEG} -y -loglevel panic -i "${src_file_path}.flac" -vn -acodec alac "${dst_file_path}.m4a"
-  # export thumbnail
-  ${FFMPEG} -y -loglevel panic -i "${src_file_path}.flac" "${dst_file_path}.jpg"
-  # import thumbnail
-  ${ATOMICPARSLEY} "${dst_file_path}.m4a" --artwork "${dst_file_path}.jpg" --overWrite > /dev/null
+  # convert
+  convert_flac_to_alac ${src_file_path} ${dst_file_path}
 done
