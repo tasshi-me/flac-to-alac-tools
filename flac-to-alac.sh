@@ -9,14 +9,45 @@
 ECHO=/bin/echo
 FFMPEG=/usr/local/bin/ffmpeg
 ATOMICPARSLEY=/usr/local/bin/AtomicParsley
+INTERACTIVE=0
+
+function show_help () {
+  command_name=$(basename "${0}")
+  ${ECHO} "Usage: ${command_name} [-h] [-i]" 1>&2
+  ${ECHO} "Options:" 1>&2
+  ${ECHO} "    -h      -- print basic options" 1>&2
+  ${ECHO} "    -i      -- interactive mode" 1>&2
+}
 
 # info
 ${ECHO} "FLAC to ALAC tool Copyright (c) 2020 tasshi"
+
+# parse args
+while getopts ih OPT
+do
+  case $OPT in
+    "i" ) INTERACTIVE=1 ;;
+    "h" ) show_help ${CMDNAME}; exit 1 ;;
+    * ) show_help ${CMDNAME}; exit 1 ;;
+  esac
+done
+
+shift `expr $OPTIND - 1`
+
+if [ ${INTERACTIVE} -eq 1 ]; then
+  ${ECHO} "interactive mode: on"
+fi
+${ECHO};
 
 # src dir
 if [ -n "${1}" ]; then
   src_dir=${1}
 else
+  if [ ${INTERACTIVE} -eq 0 ]; then
+    ${ECHO} "Source directory have to be specified."
+    ${ECHO} "Abort."
+    exit
+  fi
   ${ECHO} "Input source directory (empty to exit)."
   ${ECHO} -n "src dir: "
   read input_src_dir
@@ -36,13 +67,15 @@ dst_dir="${parent_dir}/ALAC/${base_dir}"
 if [ -n "${2}" ]; then
   dst_dir=${2}
 else
-  ${ECHO} "Input destination directory (empty to use default)."
-  ${ECHO} "Default: ${dst_dir}"
-  ${ECHO} -n "dst dir: "
-  read input_dst_dir
-  ${ECHO};
-  if [ -n "${input_dst_dir}" ]; then
-    dst_dir=${input_dst_dir}
+  if [ ${INTERACTIVE} -eq 1 ]; then
+    ${ECHO} "Input destination directory (empty to use default)."
+    ${ECHO} "Default: ${dst_dir}"
+    ${ECHO} -n "dst dir: "
+    read input_dst_dir
+    ${ECHO};
+    if [ -n "${input_dst_dir}" ]; then
+      dst_dir=${input_dst_dir}
+    fi
   fi
 fi
 
@@ -63,11 +96,14 @@ ${ECHO} "src: $src_dir"
 ${ECHO} "dst: $dst_dir"
 ${ECHO} "------------------------------------------------------"
 ${ECHO} "After this operation, ${flac_file_count} files will be converted."
-${ECHO} -n "Do you want to continue? [Y/n] "
-read confirmation
-if [ "${confirmation}" != "y" -a "${confirmation}" != "Y" -a "${confirmation}" != "yes" -a "${confirmation}" != "YES" ];then
-  ${ECHO} "Abort."
-  exit
+
+if [ ${INTERACTIVE} -eq 1 ]; then
+  ${ECHO} -n "Do you want to continue? [Y/n] "
+  read confirmation
+  if [ "${confirmation}" != "y" -a "${confirmation}" != "Y" -a "${confirmation}" != "yes" -a "${confirmation}" != "YES" ];then
+    ${ECHO} "Abort."
+    exit
+  fi
 fi
 ${ECHO};
 
