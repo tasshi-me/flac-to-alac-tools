@@ -20,3 +20,7 @@ GLOBAL OPTIONS:
    --force, -f        Attempt to overwrite output files (default: false)
    --help, -h         show help (default: false)
 ```
+
+## Lisence
+
+This project is licensed under the [MIT license.](./LICENSE)
