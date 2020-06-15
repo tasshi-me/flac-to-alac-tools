@@ -221,10 +221,11 @@ func main() {
 				iconEscaped = strings.ReplaceAll(icon, "%", "_percent_")
 			}
 			if !forceOverwrite {
-				_, dstErr := os.Stat(dst)
-				// _, iconErr := os.Stat(icon)
-				// if dstErr == nil && iconErr == nil {
-				if dstErr == nil {
+				exists, err := fileExists(dst)
+				if err != nil {
+					abort("failed to check dst files", err, 1)
+				}
+				if exists {
 					fmt.Printf("[%d/%d] skipped: %s\n", i+1, len(convertMaps), src)
 					continue
 				}
