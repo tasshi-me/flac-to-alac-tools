@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      pkg_version: ${{ steps.set_pkg_version.outputs.pkg_version }}
+      tag_exists: ${{ steps.check_tag_exists.outputs.tag_exists }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: go version
+      - run: go mod tidy
+      - run: make
+      - name: Set package version to outputs
+        id: set_pkg_version
+        run: echo ::set-output name=pkg_version::$(cat .version)
+      - name: Check if release tag already exists
+        id: check_tag_exists
+        run: |
+          if [ $(git tag -l v${{ steps.set_pkg_version.outputs.pkg_version }}) ];then
+            echo "tag v${{ steps.set_pkg_version.outputs.pkg_version }} already exists. release will be skipped."
+            echo ::set-output name=tag_exists::1
+          else
+            echo ::set-output name=tag_exists::0
+          fi
+      - run: make artifacts
+        if: steps.check_tag_exists.outputs.tag_exists == 0
+      - name: Upload artifacts
+        if: steps.check_tag_exists.outputs.tag_exists == 0
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts-${{ github.sha }}
+          path: ./artifacts/
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    if: needs.test.outputs.tag_exists == 0
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts-${{ github.sha }}
+      - name: Set release note (escaped)
+        run: echo ::set-env name=release_note_escaped::$(cat ./artifacts-${{ github.sha }}/release-note-${{ needs.test.outputs.pkg_version }}.md| tr '\n' '\a' | sed -r -e 's/\a/%0A/g')
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{ needs.test.outputs.pkg_version }}
+          release_name: Release v${{ needs.test.outputs.pkg_version }}
+          body: ${{ env.release_note_escaped }}
+          draft: true
+          prerelease: false
+      - name: Upload Release Artifacts (darwin amd64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts-${{ github.sha }}/flac2alac_darwin_amd64.zip
+          asset_name: flac2alac-darwin-amd64-${{ needs.test.outputs.pkg_version }}.zip
+          asset_content_type: application/zip
+      - name: Upload Release Artifacts (linux amd64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts-${{ github.sha }}/flac2alac_linux_amd64.zip
+          asset_name: flac2alac-linux-amd64-${{ needs.test.outputs.pkg_version }}.zip
+          asset_content_type: application/zip
+      - name: Upload Release Artifacts (windows amd64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts-${{ github.sha }}/flac2alac_windows_amd64.zip
+          asset_name: flac2alac-windows-amd64-${{ needs.test.outputs.pkg_version }}.zip
+          asset_content_type: application/zip
+      - name: Upload Release Note
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts-${{ github.sha }}/release-note-${{ needs.test.outputs.pkg_version }}.md
+          asset_name: release-note-${{ needs.test.outputs.pkg_version }}.md
+          asset_content_type: text/markdown

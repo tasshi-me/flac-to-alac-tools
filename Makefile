@@ -2,7 +2,9 @@ GOCMD=go
 BINARY_NAME=flac2alac
 BINARY_MAC=$(BINARY_NAME)_darwin_amd64
 BINARY_LINUX=$(BINARY_NAME)_linux_amd64
-BINARY_WINDOWS=$(BINARY_NAME)_windows_amd64.exe
+BINARY_WINDOWS=$(BINARY_NAME)_windows_amd64
+PKG_VERSION=$(shell cat .version)
+RELEASE_NOTE=./docs/release-notes/$(PKG_VERSION).md
 ARTIFACTS=artifacts
 
 all: build-mac build-linux build-windows
@@ -27,16 +29,18 @@ build-mac: main.go
 build-linux: main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOCMD) build -o $(BINARY_LINUX) -v
 build-windows: main.go
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOCMD) build -o $(BINARY_WINDOWS) -v
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOCMD) build -o $(BINARY_WINDOWS).exe -v
 $(BINARY_MAC): main.go
 	make build-mac
 $(BINARY_LINUX): main.go
 	make build-linux
 $(BINARY_WINDOWS): main.go
 	make build-windows
-artifacts: $(BINARY_MAC) $(BINARY_LINUX) $(BINARY_WINDOWS)
+
+artifacts: $(BINARY_MAC) $(BINARY_LINUX) $(RELEASE_NOTE) $(BINARY_WINDOWS).exe
 	mkdir -p $(ARTIFACTS)
+	cp $(RELEASE_NOTE) ./artifacts/release-note-$(PKG_VERSION).md
 	zip --junk-paths $(ARTIFACTS)/$(BINARY_MAC) $(BINARY_MAC)
 	zip --junk-paths $(ARTIFACTS)/$(BINARY_LINUX) $(BINARY_LINUX)
-	zip --junk-paths $(ARTIFACTS)/$(BINARY_WINDOWS) $(BINARY_WINDOWS)
+	zip --junk-paths $(ARTIFACTS)/$(BINARY_WINDOWS) $(BINARY_WINDOWS).exe
 
