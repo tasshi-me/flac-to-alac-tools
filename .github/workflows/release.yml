@@ -33,7 +33,7 @@ jobs:
         if: steps.check_tag_exists.outputs.tag_exists == 0
       - name: Upload artifacts
         if: steps.check_tag_exists.outputs.tag_exists == 0
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ github.sha }}
           path: ./artifacts/
