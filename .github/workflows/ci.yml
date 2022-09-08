@@ -1,12 +1,11 @@
-name: Development
+name: CI
 
 on:
   push:
-    branches-ignore:
-      - "main"
+  pull_request:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
