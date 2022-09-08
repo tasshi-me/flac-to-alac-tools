@@ -31,6 +31,8 @@ jobs:
       - name: Archive executables to zip
         working-directory: /tmp
         run: |
+          echo ${GITHUB_WORKSPACE}
+          ls ${GITHUB_WORKSPACE}
           mkdir -p /tmp/flac2alac-{linux,macos,win}-amd64
           cp ${GITHUB_WORKSPACE}/dist/flac2alac_linux_amd64 flac2alac-linux-amd64/flac2alac
           cp ${GITHUB_WORKSPACE}/dist/flac2alac_macos_amd64 flac2alac-macos-amd64/flac2alac
