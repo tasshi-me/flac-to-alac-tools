@@ -2,7 +2,7 @@ module github.com/mshrtsr/flac-to-alac-tools
 
 go 1.21.4
 
-require github.com/urfave/cli/v2 v2.25.7
+require github.com/urfave/cli/v2 v2.26.0
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
