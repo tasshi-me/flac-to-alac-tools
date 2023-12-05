@@ -1,6 +1,6 @@
 module github.com/mshrtsr/flac-to-alac-tools
 
-go 1.21.4
+go 1.21.5
 
 require github.com/urfave/cli/v2 v2.26.0
 
