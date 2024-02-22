@@ -1,4 +1,4 @@
-module github.com/mshrtsr/flac-to-alac-tools
+module github.com/tasshi-me/flac-to-alac-tools
 
 go 1.22.0
 

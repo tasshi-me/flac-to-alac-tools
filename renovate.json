@@ -1,6 +1,6 @@
 {
   "extends": [
-    "github>mshrtsr/renovate-config",
+    "github>tasshi-me/renovate-config",
     ":semanticCommits"
   ]
 }
