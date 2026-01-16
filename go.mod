@@ -1,6 +1,6 @@
 module github.com/tasshi-me/flac-to-alac-tools
 
-go 1.25.4
+go 1.25.6
 
 require github.com/urfave/cli/v2 v2.27.7
 
