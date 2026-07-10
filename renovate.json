@@ -1,6 +1,6 @@
 {
   "extends": [
-    "github>tasshi-me/renovate-config",
+    "github>tasshi-me/configs",
     ":semanticCommits"
   ]
 }
